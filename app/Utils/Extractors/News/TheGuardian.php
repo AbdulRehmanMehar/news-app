@@ -18,7 +18,7 @@ class TheGuardian
         return [
             'title' => $article['webTitle'],
             'externalLink' => $article['webUrl'],
-            'imageURL' => $article['fields']['thumbnail'],
+            'imageURL' => array_key_exists('thumbnail', $article['fields']) ? $article['fields']['thumbnail'] : null,
             'description' => substr($article['fields']['bodyText'], 0, 200),
             'publishedAt' => $article['webPublicationDate'],
             'source' => $article['fields']['publication'],

@@ -4,9 +4,10 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PreferenceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Jobs\Crawlers\News\NewsAPI;
-use App\Jobs\Crawlers\News\TheGuardian;
-use App\Jobs\Crawlers\News\NyTimes;
+use App\Utils\Crawlers\News\Kernel as News;
+use App\Utils\Crawlers\News\NewsAPI;
+use App\Utils\Crawlers\News\TheGuardian;
+use App\Utils\Crawlers\News\NyTimes;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,6 +36,11 @@ Route::middleware('auth:sanctum')
 });
 
 Route::prefix('/realtime/news')->group(function () {
+    Route::get('/', function () {
+        $news = new News();
+        return response($news->fetch());
+    });
+
     Route::get('/newsapi', function () {
         $newsAPI = new NewsAPI();
         return response($newsAPI->fetch());

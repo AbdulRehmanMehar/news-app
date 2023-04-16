@@ -1,13 +1,6 @@
 <?php
 
-namespace App\Jobs\Crawlers\News;
-
-use Exception;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\ClientException;
-
-
-namespace App\Jobs\Crawlers\News;
+namespace App\Utils\Crawlers\News;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
