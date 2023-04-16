@@ -29,7 +29,7 @@ class TheGuardian
     public function fetch()
     {
         try {
-            $res = $this->client->get("{$this->headlinesURL}?api-key={$this->apiKey}");
+            $res = $this->client->get("{$this->headlinesURL}?show-tags=contributor&api-key={$this->apiKey}");
             return json_decode($res->getBody(), true);
         } catch (ClientException $e) {
             return [];
