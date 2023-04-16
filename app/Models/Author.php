@@ -23,4 +23,14 @@ class Author extends Model
             'news_id'
         );
     }
+
+    public function user()
+    {
+        return $this->belongsToMany(
+            User::class,
+            'user_authors',
+            'author_id',
+            'user_id'
+        );
+    }
 }
