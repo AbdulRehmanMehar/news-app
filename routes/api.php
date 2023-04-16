@@ -1,8 +1,12 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PreferenceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Jobs\Crawlers\News\NewsAPI;
+use App\Jobs\Crawlers\News\TheGuardian;
+use App\Jobs\Crawlers\News\NyTimes;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,6 +26,27 @@ Route::controller(AuthController::class)->prefix('/auth')->group(function () {
     Route::middleware('auth:sanctum')->get('/logout', 'logout');
 });
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::middleware('auth:sanctum')
+    ->controller(PreferenceController::class)
+    ->prefix('/user-preferences')
+    ->group(function () {
+
+    Route::get('/', 'show');
+});
+
+Route::prefix('/realtime/news')->group(function () {
+    Route::get('/newsapi', function () {
+        $newsAPI = new NewsAPI();
+        return response($newsAPI->fetch());
+    });
+
+    Route::get('/nytimes', function () {
+        $newsAPI = new NyTimes();
+        return response($newsAPI->fetch());
+    });
+
+    Route::get('/guardian', function () {
+        $newsAPI = new TheGuardian();
+        return response($newsAPI->fetch());
+    });
 });

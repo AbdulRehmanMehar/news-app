@@ -5,7 +5,7 @@ namespace App\Jobs\Crawlers\News;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 
-class TheGuardian
+class NyTimes
 {
 
     private $client = null;
@@ -23,7 +23,7 @@ class TheGuardian
     {
         try {
             $res = $this->client->request('GET', "{$this->headlinesURL}?api-key={$this->apiKey}");
-            return $res->getBody();
+            return json_decode($res->getBody(), true);
         } catch (ClientException $e) {
             return [];
         }

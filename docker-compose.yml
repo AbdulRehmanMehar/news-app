@@ -4,7 +4,7 @@ services:
         build:
             context: ./resources/frontend/
             dockerfile: Dockerfile
-        container_name: "newsFE"
+        container_name: "news-app-react-frontend"
         ports:
             - "3001:3000"
         environment:
@@ -39,6 +39,8 @@ services:
         depends_on:
             - mysql
             - meilisearch
+        dns:
+            - 8.8.8.8
     mysql:
         image: "mysql/mysql-server:8.0"
         ports:

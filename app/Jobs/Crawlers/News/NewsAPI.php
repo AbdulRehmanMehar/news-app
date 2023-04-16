@@ -23,7 +23,7 @@ class NewsAPI
     {
         try {
             $res = $this->client->request('GET', "{$this->headlinesURL}?country=us&apiKey={$this->apiKey}");
-            return $res->getBody();
+            return json_decode($res->getBody(), true);
         } catch (ClientException $e) {
             return [];
         }
