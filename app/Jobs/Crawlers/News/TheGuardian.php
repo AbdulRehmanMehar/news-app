@@ -11,6 +11,7 @@ namespace App\Jobs\Crawlers\News;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
+use App\Utils\Extractors\News\TheGuardian as Extractor;
 
 class TheGuardian
 {
@@ -29,8 +30,10 @@ class TheGuardian
     public function fetch()
     {
         try {
-            $res = $this->client->get("{$this->headlinesURL}?show-tags=contributor&api-key={$this->apiKey}");
-            return json_decode($res->getBody(), true);
+            $res = $this->client->get(
+                "{$this->headlinesURL}?show-tags=contributor&page-size=50&show-fields=all&api-key={$this->apiKey}"
+            );
+            return Extractor::extract(json_decode($res->getBody(), true));
         } catch (ClientException $e) {
             return [];
         }

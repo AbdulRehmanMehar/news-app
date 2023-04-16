@@ -4,6 +4,7 @@ namespace App\Jobs\Crawlers\News;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
+use App\Utils\Extractors\News\NyTimes as Extractor;
 
 class NyTimes
 {
@@ -23,7 +24,7 @@ class NyTimes
     {
         try {
             $res = $this->client->request('GET', "{$this->headlinesURL}?api-key={$this->apiKey}");
-            return json_decode($res->getBody(), true);
+            return Extractor::extract(json_decode($res->getBody(), true));
         } catch (ClientException $e) {
             return [];
         }
