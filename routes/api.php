@@ -1,5 +1,6 @@
 <?php
 
+use App\Utils\Seeders\News\Kernel as NewsSeeder;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PreferenceController;
 use Illuminate\Http\Request;
@@ -37,8 +38,9 @@ Route::middleware('auth:sanctum')
 
 Route::prefix('/realtime/news')->group(function () {
     Route::get('/', function () {
-        $news = new News();
-        return response($news->fetch());
+        $news = new NewsSeeder();
+
+        return response($news->seed());
     });
 
     Route::get('/newsapi', function () {
