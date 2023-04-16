@@ -9,6 +9,11 @@ class Source extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'name',
+    ];
+
+
     public function news()
     {
         return $this->belongsToMany(

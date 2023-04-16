@@ -9,6 +9,15 @@ class News extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'title',
+        'externalLink',
+        'imageURL',
+        'description',
+        'publishedAt'
+    ];
+
+
     public function authors()
     {
         return $this->belongsToMany(Author::class, 'news_authors', 'news_id', 'author_id');
