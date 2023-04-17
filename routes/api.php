@@ -2,6 +2,7 @@
 
 use App\Utils\Seeders\News\Kernel as NewsSeeder;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\NewsFeed;
 use App\Http\Controllers\PreferenceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -20,6 +21,8 @@ use App\Utils\Crawlers\News\NyTimes;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+
+Route::get('/newsfeed', [NewsFeed::class, 'show']);
 
 Route::controller(AuthController::class)->prefix('/auth')->group(function () {
     Route::post('/login', 'login');
