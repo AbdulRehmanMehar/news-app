@@ -2,7 +2,7 @@
 
 import { Inter } from "next/font/google";
 import { ExternalLinkIcon } from "@chakra-ui/icons";
-import { VStack, Skeleton } from "@chakra-ui/react";
+import { VStack, Skeleton, HStack, Flex, Square } from "@chakra-ui/react";
 import useSWR from "swr";
 import NewsArticle from "@/components/NewsArticle";
 import Article from "@/types/Article";
@@ -31,14 +31,28 @@ export default function Home() {
     return (
         <>
             <VStack m="10" marginX="auto" align="center" maxW={"4xl"}>
-                <Pagination
-                    currentPage={7}
-                    totalPages={5}
-                    onChange={(currentPage) => console.log(currentPage)}
-                />
+                <Flex justifyContent={"end"} width="100%" px="6">
+                    <Square>
+                        <Pagination
+                            currentPage={7}
+                            totalPages={5}
+                            onChange={(currentPage) => console.log(currentPage)}
+                        />
+                    </Square>
+                </Flex>
                 {(data || []).map((article: Article) => (
                     <NewsArticle key={article.externalLink} {...article} />
                 ))}
+
+                <Flex justifyContent={"end"} width="100%" px="6">
+                    <Square>
+                        <Pagination
+                            currentPage={7}
+                            totalPages={5}
+                            onChange={(currentPage) => console.log(currentPage)}
+                        />
+                    </Square>
+                </Flex>
             </VStack>
         </>
     );
