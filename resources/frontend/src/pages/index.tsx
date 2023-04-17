@@ -6,11 +6,15 @@ import Pagination from "@/components/Pagination";
 import NewsArticle from "@/components/NewsArticle";
 import { VStack, Skeleton, Flex, Square } from "@chakra-ui/react";
 import { useState } from "react";
+import { useRouter } from "next/router";
 
 const fetcher = (...args: any) => fetch(args).then((res) => res.json());
 
 export default function Home() {
-    const [currentPage, setCurrentPage] = useState<number>(1);
+    const router = useRouter();
+    const { query } = router;
+    const currentPage = parseInt((query.page as string) || "1");
+
     const { data: response, error } = useSWR(
         `http://localhost:8000/api/newsfeed?page=${currentPage}`,
         fetcher
@@ -36,9 +40,10 @@ export default function Home() {
                         <Pagination
                             currentPage={currentPage}
                             totalPages={totalPages}
-                            onChange={(currentPage) =>
-                                setCurrentPage(currentPage)
-                            }
+                            onChange={(currentPage) => {
+                                router.query.page = `${currentPage}`;
+                                router.push(router);
+                            }}
                         />
                     </Square>
                 </Flex>
