@@ -5,12 +5,14 @@ import Article from "@/types/Article";
 import Pagination from "@/components/Pagination";
 import NewsArticle from "@/components/NewsArticle";
 import { VStack, Skeleton, Flex, Square } from "@chakra-ui/react";
+import { useState } from "react";
 
 const fetcher = (...args: any) => fetch(args).then((res) => res.json());
 
 export default function Home() {
+    const [currentPage, setCurrentPage] = useState<number>(1);
     const { data: response, error } = useSWR(
-        "http://localhost:8000/api/newsfeed",
+        `http://localhost:8000/api/newsfeed?page=${currentPage}`,
         fetcher
     );
 
@@ -24,7 +26,7 @@ export default function Home() {
             </VStack>
         );
 
-    const { data } = response || {};
+    const { data, last_page: totalPages } = response || {};
 
     return (
         <>
@@ -32,9 +34,11 @@ export default function Home() {
                 <Flex justifyContent={"end"} width="100%" px="6">
                     <Square>
                         <Pagination
-                            currentPage={7}
-                            totalPages={5}
-                            onChange={(currentPage) => console.log(currentPage)}
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onChange={(currentPage) =>
+                                setCurrentPage(currentPage)
+                            }
                         />
                     </Square>
                 </Flex>

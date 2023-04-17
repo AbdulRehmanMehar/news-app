@@ -90,7 +90,7 @@ export default function Pagination(props: PaginationProps) {
                                 val === currentPage ? "teal.500" : "default"
                             }
                             color={val === currentPage ? "#fff" : "default"}
-                            onClick={() => val < totalPages && onChange(val)}
+                            onClick={() => val <= totalPages && onChange(val)}
                             cursor={
                                 val > totalPages ? "not-allowed" : "pointer"
                             }
@@ -105,7 +105,7 @@ export default function Pagination(props: PaginationProps) {
                     as="button"
                     p="2"
                     onClick={() =>
-                        currentPage + 1 < totalPages &&
+                        currentPage + 1 <= totalPages &&
                         onChange(currentPage + 1)
                     }
                     cursor={
