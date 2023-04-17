@@ -12,7 +12,6 @@ export default function Pagination(props: PaginationProps) {
     const { totalPages, onChange } = props;
 
     if (currentPage <= 0) currentPage = 1;
-    if (currentPage > totalPages) currentPage = totalPages;
 
     return (
         <Flex border="1px" borderColor="#e2e8f0" borderRadius="5px">

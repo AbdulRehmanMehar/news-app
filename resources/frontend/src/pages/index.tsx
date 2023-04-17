@@ -4,8 +4,14 @@ import useSWR from "swr";
 import Article from "@/types/Article";
 import Pagination from "@/components/Pagination";
 import NewsArticle from "@/components/NewsArticle";
-import { VStack, Skeleton, Flex, Square } from "@chakra-ui/react";
-import { useState } from "react";
+import {
+    VStack,
+    Skeleton,
+    Flex,
+    Square,
+    Text,
+    Container,
+} from "@chakra-ui/react";
 import { useRouter } from "next/router";
 
 const fetcher = (...args: any) => fetch(args).then((res) => res.json());
@@ -13,7 +19,7 @@ const fetcher = (...args: any) => fetch(args).then((res) => res.json());
 export default function Home() {
     const router = useRouter();
     const { query } = router;
-    const currentPage = parseInt((query.page as string) || "1");
+    const currentPage = Math.abs(parseInt((query.page as string) || "1"));
 
     const { data: response, error } = useSWR(
         `http://localhost:8000/api/newsfeed?page=${currentPage}`,
@@ -47,19 +53,33 @@ export default function Home() {
                         />
                     </Square>
                 </Flex>
-                {(data || []).map((article: Article) => (
-                    <NewsArticle key={article.externalLink} {...article} />
-                ))}
+                {data.length ? (
+                    (data || []).map((article: Article) => (
+                        <NewsArticle key={article.externalLink} {...article} />
+                    ))
+                ) : (
+                    <Container paddingY="32" textAlign={"center"} maxW={"full"}>
+                        <Text fontSize="2xl">
+                            Nothing found on this page. Try Navigating to other
+                            pages.
+                        </Text>
+                    </Container>
+                )}
 
-                <Flex justifyContent={"end"} width="100%" px="6">
-                    <Square>
-                        <Pagination
-                            currentPage={7}
-                            totalPages={5}
-                            onChange={(currentPage) => console.log(currentPage)}
-                        />
-                    </Square>
-                </Flex>
+                {data.length ? (
+                    <Flex justifyContent={"end"} width="100%" px="6">
+                        <Square>
+                            <Pagination
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onChange={(currentPage) => {
+                                    router.query.page = `${currentPage}`;
+                                    router.push(router);
+                                }}
+                            />
+                        </Square>
+                    </Flex>
+                ) : null}
             </VStack>
         </>
     );
