@@ -10,11 +10,14 @@ services:
         environment:
             - CHOKIDAR_USEPOLLING=true
         volumes:
-            - "./frontend:/app"
+            - ./resources/frontend:/usr/src/app
+            - node_modules:/usr/src/app/node_modules
         networks:
             - sail
         depends_on:
             - laravel.test
+        dns:
+            - 8.8.8.8
 
     laravel.test:
         build:
@@ -92,3 +95,9 @@ volumes:
         driver: local
     sail-meilisearch:
         driver: local
+    node_modules:
+        driver: local
+        driver_opts:
+            type: none
+            o: bind
+            device: ./resources/frontend/node_modules
