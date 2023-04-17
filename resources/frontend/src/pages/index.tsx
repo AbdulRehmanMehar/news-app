@@ -1,12 +1,10 @@
 "use client";
 
-import { Inter } from "next/font/google";
-import { ExternalLinkIcon } from "@chakra-ui/icons";
-import { VStack, Skeleton, HStack, Flex, Square } from "@chakra-ui/react";
 import useSWR from "swr";
-import NewsArticle from "@/components/NewsArticle";
 import Article from "@/types/Article";
 import Pagination from "@/components/Pagination";
+import NewsArticle from "@/components/NewsArticle";
+import { VStack, Skeleton, Flex, Square } from "@chakra-ui/react";
 
 const fetcher = (...args: any) => fetch(args).then((res) => res.json());
 
