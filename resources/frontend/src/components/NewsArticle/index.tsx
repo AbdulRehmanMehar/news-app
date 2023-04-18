@@ -69,10 +69,14 @@ export default function NewsArticle(props: Article) {
                         <Heading size="md">{title}</Heading>
 
                         {authors.length ? (
-                            <HStack m="2" spacing="2">
+                            <Container px="0" mx="0" my="2" textAlign={"left"}>
                                 {authors.map(({ name }) =>
                                     name.trim() ? (
-                                        <Center key={name}>
+                                        <Square
+                                            display={"inline-block"}
+                                            marginX={1}
+                                            key={name}
+                                        >
                                             <Tooltip
                                                 hasArrow
                                                 label="Author"
@@ -84,10 +88,10 @@ export default function NewsArticle(props: Article) {
                                                     {name}
                                                 </Badge>
                                             </Tooltip>
-                                        </Center>
+                                        </Square>
                                     ) : null
                                 )}
-                            </HStack>
+                            </Container>
                         ) : null}
 
                         <Text py="2">{description}</Text>
