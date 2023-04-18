@@ -17,11 +17,12 @@ import {
 import { useRouter } from "next/router";
 import Navbar from "@/components/Navbar";
 import Filter from "@/partials/Filter";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Author } from "next/dist/lib/metadata/types/metadata-types";
 import { Source } from "postcss";
 import Meta from "@/types/Meta";
 import Login from "@/partials/Login";
+import Register from "@/partials/Register";
 
 const fetcher = (...args: any) => fetch(args).then((res) => res.json());
 
@@ -29,9 +30,27 @@ export default function Home() {
     const router = useRouter();
     const { query } = router;
     const toast = useToast();
-    const [isFiltersOpen, setFiltersOpen] = useState<boolean>(false);
+    const [authacity, setAuthacity] = useState<{
+        authKey: string;
+        user: any;
+    }>();
     const [isLoginOpen, setLoginOpen] = useState<boolean>(false);
+    const [isFiltersOpen, setFiltersOpen] = useState<boolean>(false);
+    const [isRegisterOpen, setRegisterOpen] = useState<boolean>(false);
     const currentPage = Math.abs(parseInt((query.page as string) || "1"));
+
+    useEffect(() => {
+        const isLoggedIn = !!localStorage.getItem("authKey");
+        if (!isLoggedIn) return;
+
+        const authKey = JSON.parse(localStorage.getItem("authKey") || "");
+        const user = JSON.parse(localStorage.getItem("user") || "");
+
+        setAuthacity({
+            authKey,
+            user,
+        });
+    }, []);
 
     const { data: response, error } = useSWR(
         `http://localhost:8000/api/newsfeed?${new URLSearchParams(
@@ -88,8 +107,13 @@ export default function Home() {
                 });
             }
 
-            localStorage.setItem("user", user);
-            localStorage.setItem("authKey", token);
+            localStorage.setItem("user", JSON.stringify(user));
+            localStorage.setItem("authKey", JSON.stringify(token));
+
+            setAuthacity({
+                user,
+                authKey: token,
+            });
 
             toast({
                 title: "Login Successfull.",
@@ -98,6 +122,70 @@ export default function Home() {
                 duration: 5000,
                 isClosable: true,
             });
+
+            setLoginOpen(false);
+        } catch (error) {
+            toast({
+                title: "Something went wrong while login.",
+                description: "Try again later.",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+            });
+        }
+    };
+
+    const register = async (
+        name: string,
+        email: string,
+        password: string,
+        setError: (error: string) => void
+    ) => {
+        try {
+            const req = await fetch("http://localhost:8000/api/auth/register", {
+                method: "POST",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    name,
+                    email,
+                    password,
+                }),
+            });
+
+            const { errors, user, token } = await req.json();
+
+            if (errors) {
+                if (errors.email) setError(errors.email[0]);
+
+                return toast({
+                    title: "Invalid Credentials.",
+                    description: errors.email[0],
+                    status: "error",
+                    duration: 5000,
+                    isClosable: true,
+                });
+            }
+
+            localStorage.setItem("user", JSON.stringify(user));
+            localStorage.setItem("authKey", JSON.stringify(token));
+
+            setAuthacity({
+                user,
+                authKey: token,
+            });
+
+            toast({
+                title: "Registeration Successfull.",
+                description: "You're registered and logged in.",
+                status: "success",
+                duration: 5000,
+                isClosable: true,
+            });
+
+            setRegisterOpen(false);
         } catch (error) {
             toast({
                 title: "Something went wrong while login.",
@@ -114,26 +202,55 @@ export default function Home() {
             <VStack m="10" marginX="auto" maxW={"4xl"}>
                 <Navbar>
                     <>
-                        <Link
-                            _hover={{
-                                color: "teal.500",
-                            }}
-                            onClick={(event) => {
-                                event.preventDefault();
-                                setLoginOpen(true);
-                            }}
-                        >
-                            Login
-                        </Link>
+                        {!(authacity || {}).authKey ? (
+                            <>
+                                <Link
+                                    _hover={{
+                                        color: "teal.500",
+                                    }}
+                                    onClick={(event) => {
+                                        event.preventDefault();
+                                        setLoginOpen(true);
+                                    }}
+                                >
+                                    Login
+                                </Link>
+                                <Link
+                                    _hover={{
+                                        color: "teal.500",
+                                    }}
+                                    onClick={(event) => {
+                                        event.preventDefault();
+                                        setRegisterOpen(true);
+                                    }}
+                                >
+                                    Register
+                                </Link>
+                            </>
+                        ) : (
+                            <>
+                                <Link color="teal.500">
+                                    {authacity?.user.name}
+                                </Link>
 
-                        <Link
-                            href="/register"
-                            _hover={{
-                                color: "teal.500",
-                            }}
-                        >
-                            Register
-                        </Link>
+                                <Link
+                                    _hover={{
+                                        color: "teal.500",
+                                    }}
+                                    onClick={(event) => {
+                                        event.preventDefault();
+                                        localStorage.removeItem("user");
+                                        localStorage.removeItem("authKey");
+                                        setAuthacity({
+                                            authKey: "",
+                                            user: "",
+                                        });
+                                    }}
+                                >
+                                    Logout
+                                </Link>
+                            </>
+                        )}
 
                         <Link
                             href="#"
@@ -273,6 +390,14 @@ export default function Home() {
                     isDrawerOpen={isLoginOpen}
                     onCloseDrawer={() => setLoginOpen(false)}
                     onLogin={login}
+                />
+            ) : null}
+
+            {isRegisterOpen ? (
+                <Register
+                    isDrawerOpen={isRegisterOpen}
+                    onCloseDrawer={() => setRegisterOpen(false)}
+                    onRegister={register}
                 />
             ) : null}
         </>

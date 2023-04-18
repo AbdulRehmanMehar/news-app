@@ -31,6 +31,7 @@ class AuthController extends Controller
         ]);
 
         $token = $user->createToken('auth-token')->plainTextToken;
+        $user = $user->with('authors', 'sources');
 
         return response([
             'user' => $user,
@@ -51,7 +52,7 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $user = User::where('email', $request['email'])->first();
+        $user = User::where('email', $request['email'])->with('authors', 'sources')->first();
 
         if (!$user || ($user && !Hash::check($request['password'], $user->password))) {
             return response([
