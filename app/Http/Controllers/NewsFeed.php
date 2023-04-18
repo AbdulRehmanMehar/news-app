@@ -9,7 +9,7 @@ class NewsFeed extends Controller
 {
     public function show(Request $request)
     {
-        $news = News::with('authors', 'sources')->paginate(15);
+        $news = News::orderBy('publishedAt', 'DESC')->with('authors', 'sources')->paginate(15);
 
         return response($news, 200);
     }

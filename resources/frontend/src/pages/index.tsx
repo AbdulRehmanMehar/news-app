@@ -11,6 +11,7 @@ import {
     Square,
     Text,
     Container,
+    Button,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 
@@ -26,60 +27,92 @@ export default function Home() {
         fetcher
     );
 
-    if (error) return <div>Failed to load</div>;
-    if (!response)
-        return (
-            <VStack m="10" marginX="auto" align="center" maxW={"2xl"}>
-                {[...Array.from(Array(15).keys())].map((_) => (
-                    <Skeleton key={_} height="200px" />
-                ))}
-            </VStack>
-        );
-
     const { data, last_page: totalPages } = response || {};
 
     return (
         <>
             <VStack m="10" marginX="auto" align="center" maxW={"4xl"}>
-                <Flex justifyContent={"end"} width="100%" px="6">
-                    <Square>
-                        <Pagination
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            onChange={(currentPage) => {
-                                router.query.page = `${currentPage}`;
-                                router.push(router);
-                            }}
-                        />
-                    </Square>
-                </Flex>
-                {data.length ? (
-                    (data || []).map((article: Article) => (
-                        <NewsArticle key={article.externalLink} {...article} />
-                    ))
-                ) : (
-                    <Container paddingY="32" textAlign={"center"} maxW={"full"}>
-                        <Text fontSize="2xl">
-                            Nothing found on this page. Try Navigating to other
-                            pages.
-                        </Text>
-                    </Container>
-                )}
+                <Skeleton
+                    height="100%"
+                    minW="full"
+                    isLoaded={!!response || !!error}
+                >
+                    {!!error ? (
+                        <>
+                            <Text size={"2xl"}>Something went wrong.</Text>
+                            <Text size={"lg"}>Try again later.</Text>
+                        </>
+                    ) : (
+                        <>
+                            <Flex justifyContent={"end"} width="100%" px="6">
+                                <Square>
+                                    <Pagination
+                                        currentPage={currentPage}
+                                        totalPages={totalPages}
+                                        onChange={(currentPage) => {
+                                            router.query.page = `${currentPage}`;
+                                            router.push(router);
+                                        }}
+                                    />
+                                </Square>
+                            </Flex>
 
-                {data.length ? (
-                    <Flex justifyContent={"end"} width="100%" px="6">
-                        <Square>
-                            <Pagination
-                                currentPage={currentPage}
-                                totalPages={totalPages}
-                                onChange={(currentPage) => {
-                                    router.query.page = `${currentPage}`;
-                                    router.push(router);
-                                }}
-                            />
-                        </Square>
-                    </Flex>
-                ) : null}
+                            {(data || []).length ? (
+                                (data || []).map((article: Article) => (
+                                    <NewsArticle
+                                        key={article.externalLink}
+                                        {...article}
+                                    />
+                                ))
+                            ) : (
+                                <Container
+                                    paddingY="32"
+                                    textAlign={"center"}
+                                    maxW={"full"}
+                                >
+                                    <Text fontSize="2xl">
+                                        Nothing found on this page.
+                                    </Text>
+                                    <Text fontSize="lg">
+                                        Navigate to{" "}
+                                        <Text
+                                            as={"a"}
+                                            href="#"
+                                            color="teal.500"
+                                            onClick={(event) => {
+                                                event.preventDefault();
+                                                router.query.page = `${totalPages}`;
+                                                router.push(router);
+                                            }}
+                                        >
+                                            the last
+                                        </Text>{" "}
+                                        page.
+                                    </Text>
+                                </Container>
+                            )}
+
+                            {(data || []).length ? (
+                                <Flex
+                                    justifyContent={"end"}
+                                    width="100%"
+                                    px="6"
+                                >
+                                    <Square>
+                                        <Pagination
+                                            currentPage={currentPage}
+                                            totalPages={totalPages}
+                                            onChange={(currentPage) => {
+                                                router.query.page = `${currentPage}`;
+                                                router.push(router);
+                                            }}
+                                        />
+                                    </Square>
+                                </Flex>
+                            ) : null}
+                        </>
+                    )}
+                </Skeleton>
             </VStack>
         </>
     );

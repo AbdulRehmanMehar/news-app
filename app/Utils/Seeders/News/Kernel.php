@@ -2,10 +2,10 @@
 
 namespace App\Utils\Seeders\News;
 
-use App\Models;
 use App\Models\Author;
-use App\Models\News as NewsArticle;
 use App\Models\Source;
+use App\Utils\NormalizeString;
+use App\Models\News as NewsArticle;
 use App\Utils\Crawlers\News\Kernel as News;
 
 
@@ -41,7 +41,10 @@ class Kernel
 
         if ($articleRecord) { return; }
 
-        $articleRecord = NewsArticle::create($article);
+        $articleRecord = NewsArticle::create([
+            ...$article,
+            'description' => NormalizeString::removeEmoji($article['description'])
+        ]);
 
         $source = $article['source'];
         $authors = $article['authors'];
