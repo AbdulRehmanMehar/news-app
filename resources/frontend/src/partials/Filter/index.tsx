@@ -322,7 +322,7 @@ export default function Filter(props: FilterProps) {
                             closeDrawer();
                         }}
                     >
-                        Filter
+                        {"Apply Filter(s)"}
                     </Button>
                 </DrawerFooter>
             </DrawerContent>

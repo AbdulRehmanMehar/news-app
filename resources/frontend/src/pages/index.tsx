@@ -12,6 +12,7 @@ import {
     Text,
     Container,
     Link,
+    useToast,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import Navbar from "@/components/Navbar";
@@ -20,13 +21,16 @@ import { useState } from "react";
 import { Author } from "next/dist/lib/metadata/types/metadata-types";
 import { Source } from "postcss";
 import Meta from "@/types/Meta";
+import Login from "@/partials/login";
 
 const fetcher = (...args: any) => fetch(args).then((res) => res.json());
 
 export default function Home() {
     const router = useRouter();
     const { query } = router;
+    const toast = useToast();
     const [isFiltersOpen, setFiltersOpen] = useState<boolean>(false);
+    const [isLoginOpen, setLoginOpen] = useState<boolean>(false);
     const currentPage = Math.abs(parseInt((query.page as string) || "1"));
 
     const { data: response, error } = useSWR(
@@ -52,15 +56,71 @@ export default function Home() {
 
     const isThereAFilterApplied = Object.keys(router.query).length > 1; // margin for page
 
+    const login = async (
+        email: string,
+        password: string,
+        setError: (v: string) => void
+    ) => {
+        try {
+            const req = await fetch("http://localhost:8000/api/auth/login", {
+                method: "POST",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email,
+                    password,
+                }),
+            });
+
+            const { errors, user, token } = await req.json();
+
+            if (errors) {
+                if (errors.email) setError(errors.email[0]);
+
+                return toast({
+                    title: "Invalid Credentials.",
+                    description: errors.email[0],
+                    status: "error",
+                    duration: 5000,
+                    isClosable: true,
+                });
+            }
+
+            localStorage.setItem("user", user);
+            localStorage.setItem("authKey", token);
+
+            toast({
+                title: "Login Successfull.",
+                description: "You're logged in.",
+                status: "success",
+                duration: 5000,
+                isClosable: true,
+            });
+        } catch (error) {
+            toast({
+                title: "Something went wrong while login.",
+                description: "Try again later.",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+            });
+        }
+    };
+
     return (
         <>
             <VStack m="10" marginX="auto" maxW={"4xl"}>
                 <Navbar>
                     <>
                         <Link
-                            href="/login"
                             _hover={{
                                 color: "teal.500",
+                            }}
+                            onClick={(event) => {
+                                event.preventDefault();
+                                setLoginOpen(true);
                             }}
                         >
                             Login
@@ -106,11 +166,8 @@ export default function Home() {
                     ) : (
                         <>
                             <Flex
-                                justifyContent={
-                                    isThereAFilterApplied
-                                        ? "space-between"
-                                        : "end"
-                                }
+                                flexDirection={"column"}
+                                alignItems={"flex-end"}
                                 width="100%"
                                 px="6"
                             >
@@ -208,7 +265,15 @@ export default function Home() {
                     defaultSelected={router.query}
                     onClearFilters={clearFilters}
                     isFiltersApplied={isThereAFilterApplied}
-                ></Filter>
+                />
+            ) : null}
+
+            {isLoginOpen ? (
+                <Login
+                    isDrawerOpen={isLoginOpen}
+                    onCloseDrawer={() => setLoginOpen(false)}
+                    onLogin={login}
+                />
             ) : null}
         </>
     );
