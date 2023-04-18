@@ -41,7 +41,16 @@ export default function Home() {
         fetcher
     );
 
+    const clearFilters = () => {
+        const page = router.query.page;
+        router.query = {};
+        router.query.page = page;
+        router.push(router);
+    };
+
     const { data, last_page: totalPages } = response || {};
+
+    const isThereAFilterApplied = Object.keys(router.query).length > 1; // margin for page
 
     return (
         <>
@@ -96,7 +105,27 @@ export default function Home() {
                         </>
                     ) : (
                         <>
-                            <Flex justifyContent={"end"} width="100%" px="6">
+                            <Flex
+                                justifyContent={
+                                    isThereAFilterApplied
+                                        ? "space-between"
+                                        : "end"
+                                }
+                                width="100%"
+                                px="6"
+                            >
+                                {isThereAFilterApplied ? (
+                                    <Square>
+                                        <Text size={"sm"}>
+                                            <Link
+                                                color="teal.500"
+                                                onClick={() => clearFilters()}
+                                            >
+                                                Clear Filters
+                                            </Link>
+                                        </Text>
+                                    </Square>
+                                ) : null}
                                 <Square>
                                     <Pagination
                                         currentPage={currentPage}
@@ -176,6 +205,9 @@ export default function Home() {
                         router.query = { ...router.query, ...filters };
                         router.push(router);
                     }}
+                    defaultSelected={router.query}
+                    onClearFilters={clearFilters}
+                    isFiltersApplied={isThereAFilterApplied}
                 ></Filter>
             ) : null}
         </>

@@ -17,10 +17,11 @@ import {
     Skeleton,
     Flex,
     Text,
+    Link,
     useCheckboxGroup,
     Box,
 } from "@chakra-ui/react";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, Fragment, SetStateAction, useEffect, useState } from "react";
 import useSWR, { SWRResponse } from "swr";
 import { RangeDatepicker } from "chakra-dayzed-datepicker";
 import Meta from "@/types/Meta";
@@ -37,6 +38,9 @@ export interface FilterProps {
     onCloseDrawer: () => void;
     metaData?: Meta;
     applyFilters?: (filters: FilterOptions) => void;
+    defaultSelected?: FilterOptions;
+    onClearFilters?: () => void;
+    isFiltersApplied: boolean;
 }
 
 interface DynamicMultipleSelectionProps {
@@ -46,6 +50,7 @@ interface DynamicMultipleSelectionProps {
         [x: string]: any;
         onChange: (eventOrValue: any) => void;
     };
+    defaultSelected: any[];
 }
 
 function DynamicMultipleSelection(props: DynamicMultipleSelectionProps) {
@@ -53,7 +58,10 @@ function DynamicMultipleSelection(props: DynamicMultipleSelectionProps) {
         headline,
         resp: sources,
         selectionProps: sourcesCheckboxProps,
+        defaultSelected,
     } = props;
+
+    console.log({ defaultSelected });
 
     return (
         <VStack my={"5"} align={"left"} title={headline}>
@@ -61,21 +69,30 @@ function DynamicMultipleSelection(props: DynamicMultipleSelectionProps) {
             <Skeleton isLoaded={!!sources}>
                 {(sources || []).length ? (
                     <Box position="relative">
-                        <CheckboxGroup colorScheme="green">
-                            {sources?.map(({ name, id }) => (
-                                <Checkbox
-                                    key={id}
-                                    m="1"
-                                    {...sourcesCheckboxProps({
-                                        value: `${id}`,
-                                    })}
-                                >
-                                    {name.length > 20
-                                        ? name.slice(0, 20)
-                                        : name}
-                                </Checkbox>
-                            ))}
-                        </CheckboxGroup>
+                        <Fragment key={defaultSelected.join("") || "default"}>
+                            <CheckboxGroup
+                                colorScheme="green"
+                                defaultValue={defaultSelected}
+                            >
+                                {sources?.map(({ name, id }) => (
+                                    <Checkbox
+                                        isChecked={
+                                            defaultSelected.indexOf(`${id}`) !==
+                                            -1
+                                        }
+                                        key={`${name}-${id}`}
+                                        m="1"
+                                        {...sourcesCheckboxProps({
+                                            value: `${id}`,
+                                        })}
+                                    >
+                                        {name.length > 20
+                                            ? name.slice(0, 20)
+                                            : name}
+                                    </Checkbox>
+                                ))}
+                            </CheckboxGroup>
+                        </Fragment>
                     </Box>
                 ) : null}
             </Skeleton>
@@ -157,11 +174,21 @@ function DateSelection(props: DateSelectionProps) {
 
 export default function Filter(props: FilterProps) {
     const { onClose } = useDisclosure();
-    const { isDrawerOpen, onCloseDrawer, metaData, applyFilters } = props;
+    const {
+        isDrawerOpen,
+        onCloseDrawer,
+        metaData,
+        applyFilters,
+        onClearFilters,
+        defaultSelected,
+        isFiltersApplied,
+    } = props;
     const { authors, sources, publishedAt } = metaData || {};
     const [isOpen, setIsOpen] = useState<boolean>(isDrawerOpen);
     const [searchValue, setSearchValue] = useState<string>("");
     const [selectedDates, setSelectedDates] = useState<any[]>([null, null]);
+    const [defaultCheckboxSelection, setDefaultCheckboxSelection] =
+        useState<any>();
     const {
         value: sourcesCheckboxValue,
         getCheckboxProps: sourcesCheckboxProps,
@@ -182,12 +209,35 @@ export default function Filter(props: FilterProps) {
         setIsOpen(isDrawerOpen);
     }, [isDrawerOpen]);
 
+    useEffect(() => {
+        defaultSelected?.search && setSearchValue(defaultSelected.search);
+        defaultSelected?.minDate &&
+            defaultSelected?.maxDate &&
+            setSelectedDates([
+                Date.parse(defaultSelected.minDate as any),
+                Date.parse(defaultSelected.maxDate as any),
+            ]);
+        setDefaultCheckboxSelection({
+            authors: defaultSelected?.authors
+                ? JSON.parse(
+                      decodeURIComponent(defaultSelected?.authors as any)
+                  )
+                : [],
+            sources: defaultSelected?.sources
+                ? JSON.parse(
+                      decodeURIComponent(defaultSelected?.sources as any)
+                  )
+                : [],
+        });
+    }, [defaultSelected]);
     return (
         <Drawer isOpen={isOpen} placement="right" onClose={closeDrawer}>
             <DrawerOverlay />
             <DrawerContent>
                 <DrawerCloseButton />
-                <DrawerHeader>Filter the feed</DrawerHeader>
+                <DrawerHeader>
+                    <Text>Filter the feed</Text>
+                </DrawerHeader>
 
                 <DrawerBody>
                     <SearchInput
@@ -202,12 +252,18 @@ export default function Filter(props: FilterProps) {
                         setSelectedDates={setSelectedDates}
                     />
                     <DynamicMultipleSelection
+                        defaultSelected={
+                            (defaultCheckboxSelection || {})["sources"] || []
+                        }
                         headline="Source / Category"
                         resp={sources as any}
                         selectionProps={sourcesCheckboxProps}
                     />
 
                     <DynamicMultipleSelection
+                        defaultSelected={
+                            (defaultCheckboxSelection || {})["authors"] || []
+                        }
                         headline="Author(s)"
                         resp={authors as any}
                         selectionProps={authorsCheckboxProps}
@@ -215,6 +271,19 @@ export default function Filter(props: FilterProps) {
                 </DrawerBody>
 
                 <DrawerFooter>
+                    {isFiltersApplied ? (
+                        <Text size={"sm"} mr="3">
+                            <Link
+                                color="teal.500"
+                                onClick={() => {
+                                    onClearFilters && onClearFilters();
+                                    closeDrawer();
+                                }}
+                            >
+                                Clear Filters
+                            </Link>
+                        </Text>
+                    ) : null}
                     <Button variant="outline" mr={3} onClick={closeDrawer}>
                         Cancel
                     </Button>
@@ -226,11 +295,8 @@ export default function Filter(props: FilterProps) {
                         }}
                         onClick={() => {
                             const [minDate, maxDate] = selectedDates;
-                            console.log({ authorsCheckboxValue });
 
-                            let obj = {
-                                minDate,
-                                maxDate,
+                            let obj: any = {
                                 search: searchValue,
                                 authors: authorsCheckboxValue.length
                                     ? encodeURIComponent(
@@ -243,18 +309,22 @@ export default function Filter(props: FilterProps) {
                                       )
                                     : null,
                             };
+
+                            if (minDate && maxDate) {
+                                obj = {
+                                    ...obj,
+                                    minDate: new Date(minDate).toISOString(),
+                                    maxDate: new Date(maxDate).toISOString(),
+                                };
+                            }
+
                             const filters = Object.fromEntries(
                                 Object.entries(obj).filter(
-                                    ([_, v]) =>
-                                        v != null && v != "" && (v || []).length
+                                    ([_, v]) => v != null && v != ""
                                 )
                             );
                             applyFilters && applyFilters(filters);
                             closeDrawer();
-
-                            console.log({
-                                filters,
-                            });
                         }}
                     >
                         Filter
