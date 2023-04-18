@@ -21,6 +21,7 @@ class NewsFeed extends Controller
         $news = $news->with('authors', 'sources');
 
         if ($authors) {
+            $authors = rawurldecode($authors);
             $authors = json_decode($authors);
             $news = $news->whereExists(function ($query) use ($authors) {
                 $query->select('*')
@@ -31,6 +32,7 @@ class NewsFeed extends Controller
         }
 
         if ($sources) {
+            $sources = rawurldecode($sources);
             $sources = json_decode($sources);
             $news = $news->whereExists(function ($query) use ($sources) {
                 $query->select('*')

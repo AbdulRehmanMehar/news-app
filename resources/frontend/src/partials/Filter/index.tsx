@@ -26,8 +26,8 @@ import { RangeDatepicker } from "chakra-dayzed-datepicker";
 import Meta from "@/types/Meta";
 
 interface FilterOptions {
-    sources?: (string | number)[];
-    authors?: (string | number)[];
+    sources?: (string | number)[] | undefined;
+    authors?: (string | number)[] | undefined;
     minDate?: Date;
     maxDate?: Date;
     search?: string;
@@ -226,14 +226,29 @@ export default function Filter(props: FilterProps) {
                         }}
                         onClick={() => {
                             const [minDate, maxDate] = selectedDates;
+                            console.log({ authorsCheckboxValue });
 
-                            const filters = {
+                            let obj = {
                                 minDate,
                                 maxDate,
                                 search: searchValue,
-                                authors: authorsCheckboxValue,
-                                sources: sourcesCheckboxValue,
+                                authors: authorsCheckboxValue.length
+                                    ? encodeURIComponent(
+                                          JSON.stringify(authorsCheckboxValue)
+                                      )
+                                    : null,
+                                sources: sourcesCheckboxValue.length
+                                    ? encodeURIComponent(
+                                          JSON.stringify(sourcesCheckboxValue)
+                                      )
+                                    : null,
                             };
+                            const filters = Object.fromEntries(
+                                Object.entries(obj).filter(
+                                    ([_, v]) =>
+                                        v != null && v != "" && (v || []).length
+                                )
+                            );
                             applyFilters && applyFilters(filters);
                             closeDrawer();
 

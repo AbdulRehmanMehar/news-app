@@ -30,7 +30,9 @@ export default function Home() {
     const currentPage = Math.abs(parseInt((query.page as string) || "1"));
 
     const { data: response, error } = useSWR(
-        `http://localhost:8000/api/newsfeed?page=${currentPage}`,
+        `http://localhost:8000/api/newsfeed?${new URLSearchParams(
+            query as any
+        ).toString()}`,
         fetcher
     );
 
@@ -170,6 +172,10 @@ export default function Home() {
                     isDrawerOpen={isFiltersOpen}
                     onCloseDrawer={() => setFiltersOpen(false)}
                     metaData={metaData}
+                    applyFilters={(filters: any) => {
+                        router.query = { ...router.query, ...filters };
+                        router.push(router);
+                    }}
                 ></Filter>
             ) : null}
         </>
