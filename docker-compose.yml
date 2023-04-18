@@ -11,7 +11,7 @@ services:
             - CHOKIDAR_USEPOLLING=true
         volumes:
             - ./resources/frontend:/usr/src/app
-            - node_modules:/usr/src/app/node_modules
+            - ./resources/frontend/node_modules:/usr/src/app/node_modules
         networks:
             - sail
         depends_on:
