@@ -41,7 +41,6 @@ services:
             - sail
         depends_on:
             - mysql
-            - meilisearch
         dns:
             - 8.8.8.8
     mysql:
@@ -68,23 +67,8 @@ services:
                 - "-p${DB_PASSWORD}"
             retries: 3
             timeout: 5s
-    meilisearch:
-        image: "getmeili/meilisearch:latest"
-        ports:
-            - "${FORWARD_MEILISEARCH_PORT:-7700}:7700"
-        volumes:
-            - "sail-meilisearch:/meili_data"
-        networks:
-            - sail
-        healthcheck:
-            test:
-                - CMD
-                - wget
-                - "--no-verbose"
-                - "--spider"
-                - "http://localhost:7700/health"
-            retries: 3
-            timeout: 5s
+        dns:
+            - 8.8.8.8
 networks:
     sail:
         driver: bridge
