@@ -2,6 +2,7 @@
 
 use App\Utils\Seeders\News\Kernel as NewsSeeder;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\MetaController;
 use App\Http\Controllers\NewsFeed;
 use App\Http\Controllers\PreferenceController;
 use Illuminate\Http\Request;
@@ -23,6 +24,11 @@ use App\Utils\Crawlers\News\NyTimes;
 */
 
 Route::get('/newsfeed', [NewsFeed::class, 'show']);
+
+Route::controller(MetaController::class)->prefix('/meta')->group(function () {
+    Route::get('/authors', 'getAuthors');
+    Route::get('/sources', 'getSources');
+});
 
 Route::controller(AuthController::class)->prefix('/auth')->group(function () {
     Route::post('/login', 'login');

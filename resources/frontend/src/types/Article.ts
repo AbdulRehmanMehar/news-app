@@ -1,10 +1,5 @@
-export interface Author {
-    name: string;
-}
-
-export interface Source {
-    name: string;
-}
+import Author from "./Author";
+import Source from "./Source";
 
 export default interface Article {
     title: string;
@@ -12,6 +7,6 @@ export default interface Article {
     description: string;
     publishedAt: string;
     externalLink: string;
-    sources: Source[];
-    authors: Author[];
+    sources: Omit<Source, "id">[];
+    authors: Omit<Author, "id">[];
 }

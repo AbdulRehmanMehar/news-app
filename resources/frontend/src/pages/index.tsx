@@ -11,15 +11,19 @@ import {
     Square,
     Text,
     Container,
-    Button,
+    Link,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
+import Navbar from "@/components/Navbar";
+import Filter from "@/components/Filter";
+import { useState } from "react";
 
 const fetcher = (...args: any) => fetch(args).then((res) => res.json());
 
 export default function Home() {
     const router = useRouter();
     const { query } = router;
+    const [isFiltersOpen, setFiltersOpen] = useState<boolean>(true);
     const currentPage = Math.abs(parseInt((query.page as string) || "1"));
 
     const { data: response, error } = useSWR(
@@ -31,10 +35,58 @@ export default function Home() {
 
     return (
         <>
+            <Filter
+                isDrawerOpen={isFiltersOpen}
+                onCloseDrawer={() => setFiltersOpen(false)}
+            ></Filter>
+            <VStack m="10" marginX="auto" maxW={"4xl"}>
+                <Navbar>
+                    <>
+                        <Link
+                            href="/"
+                            _hover={{
+                                color: "teal.500",
+                            }}
+                        >
+                            Home
+                        </Link>
+                        <Link
+                            href="/login"
+                            _hover={{
+                                color: "teal.500",
+                            }}
+                        >
+                            Login
+                        </Link>
+
+                        <Link
+                            href="/register"
+                            _hover={{
+                                color: "teal.500",
+                            }}
+                        >
+                            Register
+                        </Link>
+
+                        <Link
+                            href="#"
+                            _hover={{
+                                color: "teal.500",
+                            }}
+                            onClick={(event) => {
+                                event.preventDefault();
+                                setFiltersOpen(true);
+                            }}
+                        >
+                            Filters
+                        </Link>
+                    </>
+                </Navbar>
+            </VStack>
             <VStack m="10" marginX="auto" align="center" maxW={"4xl"}>
                 <Skeleton
                     height="100%"
-                    minW="full"
+                    marginX={"auto"}
                     isLoaded={!!response || !!error}
                 >
                     {!!error ? (
