@@ -20,6 +20,11 @@ class NewsFeed extends Controller
         $news = News::orderBy('publishedAt', 'DESC');
         $news = $news->with('authors', 'sources');
 
+        if ($searchQuery) {
+            $news = $news->where('title', 'like', "%{$searchQuery}%");
+            $news = $news->where('description', 'like', "%{$searchQuery}%");
+        }
+
         if ($authors) {
             $authors = rawurldecode($authors);
             $authors = json_decode($authors);
@@ -49,11 +54,6 @@ class NewsFeed extends Controller
 
         if ($maxDate) {
             $news = $news->where('publishedAt', '<=', $maxDate);
-        }
-
-        if ($searchQuery) {
-            $news = $news->where('title', 'like', $searchQuery);
-            $news = $news->where('description', 'like', $searchQuery);
         }
 
         $news = $news->paginate(15);
