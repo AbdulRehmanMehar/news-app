@@ -21,7 +21,15 @@ import {
     useCheckboxGroup,
     Box,
 } from "@chakra-ui/react";
-import { Dispatch, Fragment, SetStateAction, useEffect, useState } from "react";
+import {
+    Dispatch,
+    Fragment,
+    LegacyRef,
+    SetStateAction,
+    useEffect,
+    useRef,
+    useState,
+} from "react";
 import useSWR, { SWRResponse } from "swr";
 import { RangeDatepicker } from "chakra-dayzed-datepicker";
 import Meta from "@/types/Meta";
@@ -100,25 +108,6 @@ function DynamicMultipleSelection(props: DynamicMultipleSelectionProps) {
     );
 }
 
-interface SearchInputProps {
-    value: string;
-    onChange: (value: string) => void;
-}
-
-function SearchInput(props: SearchInputProps) {
-    const { value, onChange } = props;
-    return (
-        <VStack my={"5"} align={"left"} title="Search by a keyword">
-            <Text as="b">Search a keyword</Text>
-            <Input
-                placeholder="Type here..."
-                value={value}
-                onChange={(event) => onChange(event.target.value)}
-            />
-        </VStack>
-    );
-}
-
 interface DateSelectionProps {
     minDate?: string;
     maxDate?: string;
@@ -185,7 +174,6 @@ export default function Filter(props: FilterProps) {
     } = props;
     const { authors, sources, publishedAt } = metaData || {};
     const [isOpen, setIsOpen] = useState<boolean>(isDrawerOpen);
-    const [searchValue, setSearchValue] = useState<string>("");
     const [selectedDates, setSelectedDates] = useState<any[]>([null, null]);
     const [defaultCheckboxSelection, setDefaultCheckboxSelection] =
         useState<any>();
@@ -193,6 +181,8 @@ export default function Filter(props: FilterProps) {
         value: sourcesCheckboxValue,
         getCheckboxProps: sourcesCheckboxProps,
     } = useCheckboxGroup();
+    const searchInputRef: LegacyRef<HTMLInputElement> =
+        useRef<HTMLInputElement>(null);
 
     const {
         value: authorsCheckboxValue,
@@ -210,7 +200,6 @@ export default function Filter(props: FilterProps) {
     }, [isDrawerOpen]);
 
     useEffect(() => {
-        defaultSelected?.search && setSearchValue(defaultSelected.search);
         defaultSelected?.minDate &&
             defaultSelected?.maxDate &&
             setSelectedDates([
@@ -240,10 +229,14 @@ export default function Filter(props: FilterProps) {
                 </DrawerHeader>
 
                 <DrawerBody>
-                    <SearchInput
-                        value={searchValue}
-                        onChange={(value) => setSearchValue(value)}
-                    />
+                    <VStack my={"5"} align={"left"} title="Search by a keyword">
+                        <Text as="b">Search a keyword</Text>
+                        <Input
+                            defaultValue={defaultSelected?.search}
+                            ref={searchInputRef}
+                            placeholder="Type here..."
+                        />
+                    </VStack>
 
                     <DateSelection
                         minDate={publishedAt?.min}
@@ -297,7 +290,9 @@ export default function Filter(props: FilterProps) {
                             const [minDate, maxDate] = selectedDates;
 
                             let obj: any = {
-                                search: searchValue,
+                                search: searchInputRef.current
+                                    ? searchInputRef.current.value
+                                    : null,
                                 authors: authorsCheckboxValue.length
                                     ? encodeURIComponent(
                                           JSON.stringify(authorsCheckboxValue)

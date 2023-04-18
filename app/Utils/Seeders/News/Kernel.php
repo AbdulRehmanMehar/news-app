@@ -43,7 +43,7 @@ class Kernel
 
         $articleRecord = NewsArticle::create([
             ...$article,
-            'description' => NormalizeString::removeEmoji($article['description'])
+            'description' => $article['description'] ? NormalizeString::removeEmoji($article['description']) : ''
         ]);
 
         $source = $article['source'];

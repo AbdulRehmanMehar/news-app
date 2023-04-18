@@ -19,7 +19,7 @@ class NyTimes
             'imageURL' => $imageURI,
             'description' => $article['lead_paragraph'] ? $article['lead_paragraph'] : $article['snippet'],
             'publishedAt' => $article['pub_date'],
-            'source' => $article['source'],
+            'source' => array_key_exists('source', $article) ? $article['source'] : [],
             'authors' => array_map("self::mapAuthor", $article['byline']['person'])
         ];
     }
