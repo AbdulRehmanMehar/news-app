@@ -21,7 +21,7 @@ import { useState } from "react";
 import { Author } from "next/dist/lib/metadata/types/metadata-types";
 import { Source } from "postcss";
 import Meta from "@/types/Meta";
-import Login from "@/partials/login";
+import Login from "@/partials/Login";
 
 const fetcher = (...args: any) => fetch(args).then((res) => res.json());
 
