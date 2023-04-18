@@ -19,6 +19,7 @@ import Filter from "@/partials/Filter";
 import { useState } from "react";
 import { Author } from "next/dist/lib/metadata/types/metadata-types";
 import { Source } from "postcss";
+import Meta from "@/types/Meta";
 
 const fetcher = (...args: any) => fetch(args).then((res) => res.json());
 
@@ -33,16 +34,10 @@ export default function Home() {
         fetcher
     );
 
-    const filterResp = {
-        sourceFetchResp: useSWR<Source[]>(
-            `http://localhost:8000/api/meta/sources`,
-            fetcher
-        ),
-        authorFetchResp: useSWR<Author[]>(
-            `http://localhost:8000/api/meta/authors`,
-            fetcher
-        ),
-    };
+    const { data: metaData, error: metaError } = useSWR<Meta>(
+        `http://localhost:8000/api/meta`,
+        fetcher
+    );
 
     const { data, last_page: totalPages } = response || {};
 
@@ -174,7 +169,7 @@ export default function Home() {
                 <Filter
                     isDrawerOpen={isFiltersOpen}
                     onCloseDrawer={() => setFiltersOpen(false)}
-                    {...(filterResp as any)}
+                    metaData={metaData}
                 ></Filter>
             ) : null}
         </>

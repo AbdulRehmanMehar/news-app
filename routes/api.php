@@ -26,6 +26,7 @@ use App\Utils\Crawlers\News\NyTimes;
 Route::get('/newsfeed', [NewsFeed::class, 'show']);
 
 Route::controller(MetaController::class)->prefix('/meta')->group(function () {
+    Route::get('/', 'getAllMeta');
     Route::get('/authors', 'getAuthors');
     Route::get('/sources', 'getSources');
 });

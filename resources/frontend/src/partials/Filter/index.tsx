@@ -20,21 +20,20 @@ import {
     useCheckboxGroup,
     Box,
 } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import useSWR, { SWRResponse } from "swr";
+import { RangeDatepicker } from "chakra-dayzed-datepicker";
+import Meta from "@/types/Meta";
 
 export interface FilterProps {
     isDrawerOpen: boolean;
     onCloseDrawer: () => void;
-    authorFetchResp: SWRResponse<Author[], any, any>;
-    sourceFetchResp: SWRResponse<Source[], any, any>;
+    metaData?: Meta;
 }
-
-const fetcher = (...args: any) => fetch(args).then((res) => res.json());
 
 interface DynamicMultipleSelectionProps {
     headline: string;
-    resp: SWRResponse<Author[] | Source[], any, any>;
+    resp?: Author[] | Source[];
     selectionProps: (props?: Record<string, any> | undefined) => {
         [x: string]: any;
         onChange: (eventOrValue: any) => void;
@@ -42,20 +41,16 @@ interface DynamicMultipleSelectionProps {
 }
 
 function DynamicMultipleSelection(props: DynamicMultipleSelectionProps) {
-    const { headline, resp, selectionProps: sourcesCheckboxProps } = props;
-    const { data: sources, error: sourceError } = resp;
+    const {
+        headline,
+        resp: sources,
+        selectionProps: sourcesCheckboxProps,
+    } = props;
+
     return (
         <VStack my={"5"} align={"left"} title={headline}>
             <Text as="b">{headline}</Text>
-            <Skeleton isLoaded={!!sources || !!sourceError}>
-                {sourceError ? (
-                    <>
-                        <Text size="xl">
-                            {"Couldn't"} load {headline}.
-                        </Text>
-                        <Text size="md">Please try again later.</Text>
-                    </>
-                ) : null}
+            <Skeleton isLoaded={!!sources}>
                 {(sources || []).length ? (
                     <Box position="relative">
                         <CheckboxGroup colorScheme="green">
@@ -89,7 +84,7 @@ function SearchInput(props: SearchInputProps) {
     const { value, onChange } = props;
     return (
         <VStack my={"5"} align={"left"} title="Search by a keyword">
-            <Text as="b">Search by a keyword</Text>
+            <Text as="b">Search a keyword</Text>
             <Input
                 placeholder="Type here..."
                 value={value}
@@ -99,12 +94,69 @@ function SearchInput(props: SearchInputProps) {
     );
 }
 
+interface DateSelectionProps {
+    minDate?: string;
+    maxDate?: string;
+
+    selectedDates: Date[];
+    setSelectedDates: Dispatch<SetStateAction<Date[]>>;
+}
+
+function DateSelection(props: DateSelectionProps) {
+    const { selectedDates, setSelectedDates } = props;
+
+    let { minDate, maxDate }: any = props;
+    minDate = Date.parse(minDate);
+    maxDate = Date.parse(maxDate);
+
+    return (
+        <VStack my={"5"} align={"left"} title="Search by a keyword">
+            <Text as="b">Filter Publish Date</Text>
+            <RangeDatepicker
+                selectedDates={selectedDates}
+                onDateChange={setSelectedDates}
+                minDate={minDate}
+                maxDate={maxDate}
+                propsConfigs={{
+                    dayOfMonthBtnProps: {
+                        defaultBtnProps: {
+                            _hover: {
+                                background: "teal.500",
+                                color: "white",
+                            },
+                        },
+                        isInRangeBtnProps: {
+                            background: "teal.200",
+                            color: "white",
+                        },
+                        selectedBtnProps: {
+                            background: "teal.500",
+                            color: "white",
+                        },
+                        todayBtnProps: {
+                            background: "teal.300",
+                            color: "white",
+                        },
+                    },
+                    inputProps: {
+                        size: "sm",
+                    },
+                }}
+            />
+        </VStack>
+    );
+}
+
 export default function Filter(props: FilterProps) {
     const { onClose } = useDisclosure();
-    const { isDrawerOpen, onCloseDrawer, authorFetchResp, sourceFetchResp } =
-        props;
+    const { isDrawerOpen, onCloseDrawer, metaData } = props;
+    const { authors, sources, publishedAt } = metaData || {};
     const [isOpen, setIsOpen] = useState<boolean>(isDrawerOpen);
     const [searchValue, setSearchValue] = useState<string>("");
+    const [selectedDates, setSelectedDates] = useState<Date[]>([
+        new Date(),
+        new Date(),
+    ]);
     const {
         value: sourcesCheckboxValue,
         getCheckboxProps: sourcesCheckboxProps,
@@ -137,15 +189,22 @@ export default function Filter(props: FilterProps) {
                         value={searchValue}
                         onChange={(value) => setSearchValue(value)}
                     />
+
+                    <DateSelection
+                        minDate={publishedAt?.min}
+                        maxDate={publishedAt?.max}
+                        selectedDates={selectedDates}
+                        setSelectedDates={setSelectedDates}
+                    />
                     <DynamicMultipleSelection
                         headline="Source / Category"
-                        resp={sourceFetchResp}
+                        resp={sources as any}
                         selectionProps={sourcesCheckboxProps}
                     />
 
                     <DynamicMultipleSelection
                         headline="Author(s)"
-                        resp={authorFetchResp}
+                        resp={authors as any}
                         selectionProps={authorsCheckboxProps}
                     />
                 </DrawerBody>
@@ -155,9 +214,15 @@ export default function Filter(props: FilterProps) {
                         Cancel
                     </Button>
                     <Button
-                        colorScheme="blue"
+                        color="white"
+                        background="teal.500"
+                        _hover={{
+                            background: "teal.800",
+                        }}
                         onClick={() => {
                             console.log({
+                                searchValue,
+                                selectedDates,
                                 authorsCheckboxValue,
                                 sourcesCheckboxValue,
                             });
