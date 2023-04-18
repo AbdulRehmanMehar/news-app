@@ -1,6 +1,6 @@
 "use client";
 
-import useSWR from "swr";
+import useSWR, { SWRResponse } from "swr";
 import Article from "@/types/Article";
 import Pagination from "@/components/Pagination";
 import NewsArticle from "@/components/NewsArticle";
@@ -15,15 +15,17 @@ import {
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import Navbar from "@/components/Navbar";
-import Filter from "@/components/Filter";
+import Filter from "@/partials/Filter";
 import { useState } from "react";
+import { Author } from "next/dist/lib/metadata/types/metadata-types";
+import { Source } from "postcss";
 
 const fetcher = (...args: any) => fetch(args).then((res) => res.json());
 
 export default function Home() {
     const router = useRouter();
     const { query } = router;
-    const [isFiltersOpen, setFiltersOpen] = useState<boolean>(true);
+    const [isFiltersOpen, setFiltersOpen] = useState<boolean>(false);
     const currentPage = Math.abs(parseInt((query.page as string) || "1"));
 
     const { data: response, error } = useSWR(
@@ -31,25 +33,24 @@ export default function Home() {
         fetcher
     );
 
+    const filterResp = {
+        sourceFetchResp: useSWR<Source[]>(
+            `http://localhost:8000/api/meta/sources`,
+            fetcher
+        ),
+        authorFetchResp: useSWR<Author[]>(
+            `http://localhost:8000/api/meta/authors`,
+            fetcher
+        ),
+    };
+
     const { data, last_page: totalPages } = response || {};
 
     return (
         <>
-            <Filter
-                isDrawerOpen={isFiltersOpen}
-                onCloseDrawer={() => setFiltersOpen(false)}
-            ></Filter>
             <VStack m="10" marginX="auto" maxW={"4xl"}>
                 <Navbar>
                     <>
-                        <Link
-                            href="/"
-                            _hover={{
-                                color: "teal.500",
-                            }}
-                        >
-                            Home
-                        </Link>
                         <Link
                             href="/login"
                             _hover={{
@@ -83,12 +84,14 @@ export default function Home() {
                     </>
                 </Navbar>
             </VStack>
-            <VStack m="10" marginX="auto" align="center" maxW={"4xl"}>
-                <Skeleton
-                    height="100%"
-                    marginX={"auto"}
-                    isLoaded={!!response || !!error}
-                >
+
+            <Skeleton
+                height="100%"
+                marginX={"auto"}
+                maxW={"4xl"}
+                isLoaded={!!response || !!error}
+            >
+                <VStack m="10" marginX="auto" align="center" maxW={"4xl"}>
                     {!!error ? (
                         <>
                             <Text size={"2xl"}>Something went wrong.</Text>
@@ -164,8 +167,16 @@ export default function Home() {
                             ) : null}
                         </>
                     )}
-                </Skeleton>
-            </VStack>
+                </VStack>
+            </Skeleton>
+
+            {isFiltersOpen ? (
+                <Filter
+                    isDrawerOpen={isFiltersOpen}
+                    onCloseDrawer={() => setFiltersOpen(false)}
+                    {...(filterResp as any)}
+                ></Filter>
+            ) : null}
         </>
     );
 }

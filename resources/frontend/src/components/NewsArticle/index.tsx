@@ -70,21 +70,23 @@ export default function NewsArticle(props: Article) {
 
                         {authors.length ? (
                             <HStack m="2" spacing="2">
-                                {authors.map(({ name }) => (
-                                    <Center key={name}>
-                                        <Tooltip
-                                            hasArrow
-                                            label="Author"
-                                            bg="gray.300"
-                                            color="black"
-                                        >
-                                            <Badge>
-                                                <Icon as={AiOutlineUser} />{" "}
-                                                {name}
-                                            </Badge>
-                                        </Tooltip>
-                                    </Center>
-                                ))}
+                                {authors.map(({ name }) =>
+                                    name.trim() ? (
+                                        <Center key={name}>
+                                            <Tooltip
+                                                hasArrow
+                                                label="Author"
+                                                bg="gray.300"
+                                                color="black"
+                                            >
+                                                <Badge>
+                                                    <Icon as={AiOutlineUser} />{" "}
+                                                    {name}
+                                                </Badge>
+                                            </Tooltip>
+                                        </Center>
+                                    ) : null
+                                )}
                             </HStack>
                         ) : null}
 
