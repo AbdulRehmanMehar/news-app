@@ -25,10 +25,18 @@ import useSWR, { SWRResponse } from "swr";
 import { RangeDatepicker } from "chakra-dayzed-datepicker";
 import Meta from "@/types/Meta";
 
+interface FilterOptions {
+    sources?: (string | number)[];
+    authors?: (string | number)[];
+    minDate?: Date;
+    maxDate?: Date;
+    search?: string;
+}
 export interface FilterProps {
     isDrawerOpen: boolean;
     onCloseDrawer: () => void;
     metaData?: Meta;
+    applyFilters?: (filters: FilterOptions) => void;
 }
 
 interface DynamicMultipleSelectionProps {
@@ -149,14 +157,11 @@ function DateSelection(props: DateSelectionProps) {
 
 export default function Filter(props: FilterProps) {
     const { onClose } = useDisclosure();
-    const { isDrawerOpen, onCloseDrawer, metaData } = props;
+    const { isDrawerOpen, onCloseDrawer, metaData, applyFilters } = props;
     const { authors, sources, publishedAt } = metaData || {};
     const [isOpen, setIsOpen] = useState<boolean>(isDrawerOpen);
     const [searchValue, setSearchValue] = useState<string>("");
-    const [selectedDates, setSelectedDates] = useState<Date[]>([
-        new Date(),
-        new Date(),
-    ]);
+    const [selectedDates, setSelectedDates] = useState<any[]>([null, null]);
     const {
         value: sourcesCheckboxValue,
         getCheckboxProps: sourcesCheckboxProps,
@@ -220,11 +225,20 @@ export default function Filter(props: FilterProps) {
                             background: "teal.800",
                         }}
                         onClick={() => {
+                            const [minDate, maxDate] = selectedDates;
+
+                            const filters = {
+                                minDate,
+                                maxDate,
+                                search: searchValue,
+                                authors: authorsCheckboxValue,
+                                sources: sourcesCheckboxValue,
+                            };
+                            applyFilters && applyFilters(filters);
+                            closeDrawer();
+
                             console.log({
-                                searchValue,
-                                selectedDates,
-                                authorsCheckboxValue,
-                                sourcesCheckboxValue,
+                                filters,
                             });
                         }}
                     >
