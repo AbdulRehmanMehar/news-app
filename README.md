@@ -7,7 +7,7 @@ Fetches data from
 -   NewsAPI
 
 ### How to run?
-
+- Run `composer install`
 -   Run `
 docker run --rm \
 -u "$(id -u):$(id -g)" \
