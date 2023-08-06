@@ -26,7 +26,7 @@ import Register from "@/partials/Register";
 
 const fetcher = (...args: any) => fetch(args).then((res) => res.json());
 
-const HOSTNAME = process.env.HOSTNAME || "http://localhost:8000";
+const HOSTNAME = process.env.NEXT_PUBLIC_HOSTNAME || "http://localhost:8000";
 
 export default function Home() {
     const router = useRouter();
