@@ -26,6 +26,8 @@ import Register from "@/partials/Register";
 
 const fetcher = (...args: any) => fetch(args).then((res) => res.json());
 
+const HOSTNAME = process.env.HOSTNAME || "http://localhost:8000";
+
 export default function Home() {
     const router = useRouter();
     const { query } = router;
@@ -53,14 +55,14 @@ export default function Home() {
     }, []);
 
     const { data: response, error } = useSWR(
-        `http://localhost:8000/api/newsfeed?${new URLSearchParams(
+        `${HOSTNAME}/api/newsfeed?${new URLSearchParams(
             query as any
         ).toString()}`,
         fetcher
     );
 
     const { data: metaData, error: metaError } = useSWR<Meta>(
-        `http://localhost:8000/api/meta`,
+        `${HOSTNAME}/api/meta`,
         fetcher
     );
 
@@ -81,7 +83,7 @@ export default function Home() {
         setError: (v: string) => void
     ) => {
         try {
-            const req = await fetch("http://localhost:8000/api/auth/login", {
+            const req = await fetch(`${HOSTNAME}/api/auth/login`, {
                 method: "POST",
                 headers: {
                     Accept: "application/json",
@@ -142,7 +144,7 @@ export default function Home() {
         setError: (error: string) => void
     ) => {
         try {
-            const req = await fetch("http://localhost:8000/api/auth/register", {
+            const req = await fetch(`${HOSTNAME}/api/auth/register`, {
                 method: "POST",
                 headers: {
                     Accept: "application/json",
